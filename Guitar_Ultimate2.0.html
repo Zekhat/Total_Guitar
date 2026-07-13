@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TotalGuitar - Guitar Codex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/vexflow@3.0.9/releases/vexflow-min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/orbitron@latest/latin-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/orbitron@latest/latin-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/orbitron@latest/latin-900-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#05050f;color:#e0e0e0;overflow-x:hidden}
+.font-cyber{font-family:'Orbitron',sans-serif}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0a0a1a}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#00f0ff,#ff00ff);border-radius:3px}
+
+.bg-grid{
+background-image:
+linear-gradient(rgba(0,240,255,.03) 1px,transparent 1px),
+linear-gradient(90deg,rgba(0,240,255,.03) 1px,transparent 1px);
+background-size:40px 40px;
+}
+
+.scanlines::after{
+content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
+pointer-events:none;z-index:9999;
+}
+
+.neon-cyan{color:#00f0ff;text-shadow:0 0 5px #00f0ff,0 0 10px #00f0ff,0 0 20px #00f0ff}
+.neon-magenta{color:#ff00ff;text-shadow:0 0 5px #ff00ff,0 0 10px #ff00ff,0 0 20px #ff00ff}
+.neon-yellow{color:#ffe600;text-shadow:0 0 5px #ffe600,0 0 10px #ffe600}
+.neon-green{color:#00ff88;text-shadow:0 0 5px #00ff88,0 0 10px #00ff88}
+
+.glow-border{
+border:1px solid rgba(0,240,255,.3);
+box-shadow:0 0 5px rgba(0,240,255,.1),inset 0 0 5px rgba(0,240,255,.05);
+}
+.glow-border-magenta{
+border:1px solid rgba(255,0,255,.3);
+box-shadow:0 0 5px rgba(255,0,255,.1),inset 0 0 5px rgba(255,0,255,.05);
+}
+
+@keyframes pulse-glow{
+0%,100%{box-shadow:0 0 5px rgba(0,240,255,.3),0 0 10px rgba(0,240,255,.1)}
+50%{box-shadow:0 0 15px rgba(0,240,255,.5),0 0 30px rgba(0,240,255,.2)}
+}
+@keyframes flicker{
+0%,100%{opacity:1}
+92%{opacity:1}
+93%{opacity:.8}
+94%{opacity:1}
+96%{opacity:.9}
+97%{opacity:1}
+}
+@keyframes scan{
+0%{transform:translateY(-100%)}
+100%{transform:translateY(100vh)}
+}
+@keyframes border-flow{
+0%{background-position:0% 50%}
+100%{background-position:200% 50%}
+}
+
+.animate-pulse-glow{animation:pulse-glow 2s ease-in-out infinite}
+.animate-flicker{animation:flicker 4s infinite}
+
+.mode-btn{
+transition:all .3s;
+position:relative;
+overflow:hidden;
+}
+.mode-btn::before{
+content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+background:linear-gradient(90deg,transparent,rgba(0,240,255,.2),transparent);
+transition:left .5s;
+}
+.mode-btn:hover::before{left:100%}
+.mode-btn.active{
+background:linear-gradient(135deg,rgba(0,240,255,.2),rgba(255,0,255,.2));
+border-color:#00f0ff;
+color:#00f0ff;
+box-shadow:0 0 15px rgba(0,240,255,.3),inset 0 0 15px rgba(0,240,255,.1);
+}
+
+.root-btn{
+transition:all .2s;
+position:relative;
+}
+.root-btn:hover{
+transform:translateY(-2px);
+box-shadow:0 5px 15px rgba(0,240,255,.3);
+}
+.root-btn.active{
+background:linear-gradient(135deg,#00f0ff,#0088ff);
+color:#05050f;
+font-weight:700;
+box-shadow:0 0 20px rgba(0,240,255,.5);
+}
+
+.type-item{
+transition:all .2s;
+cursor:pointer;
+border-left:2px solid transparent;
+position:relative;
+}
+.type-item::after{
+content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+background:linear-gradient(90deg,rgba(0,240,255,.1),transparent);
+transition:width .3s;
+}
+.type-item:hover::after{width:100%}
+.type-item:hover{border-left-color:#00f0ff;color:#00f0ff}
+.type-item.active{
+border-left-color:#ff00ff;
+color:#ff00ff;
+background:rgba(255,0,255,.05);
+}
+.type-item.active::after{width:100%;background:linear-gradient(90deg,rgba(255,0,255,.1),transparent)}
+
+.note-cell{
+transition:all .15s;
+cursor:pointer;
+}
+.note-cell:hover{
+background:#00f0ff!important;
+color:#05050f!important;
+transform:scale(1.3);
+border-radius:50%;
+z-index:10;
+position:relative;
+box-shadow:0 0 10px #00f0ff;
+}
+
+.play-btn{
+transition:all .3s;
+background:linear-gradient(135deg,rgba(0,240,255,.2),rgba(255,0,255,.2));
+border:1px solid #00f0ff;
+position:relative;
+overflow:hidden;
+}
+.play-btn::before{
+content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+background:linear-gradient(90deg,transparent,rgba(0,240,255,.3),transparent);
+transition:left .5s;
+}
+.play-btn:hover::before{left:100%}
+.play-btn:hover{
+box-shadow:0 0 25px rgba(0,240,255,.4);
+transform:translateY(-2px);
+}
+.play-btn:active{transform:scale(.95)}
+
+.chord-diagram{
+background:linear-gradient(180deg,rgba(0,240,255,.05),rgba(255,0,255,.02));
+border:1px solid rgba(0,240,255,.2);
+border-radius:12px;
+position:relative;
+}
+.chord-diagram::before{
+content:'';position:absolute;top:0;left:0;right:0;height:1px;
+background:linear-gradient(90deg,transparent,#00f0ff,transparent);
+}
+
+.category-header{
+background:linear-gradient(90deg,rgba(255,0,255,.1),transparent);
+padding:8px 12px;
+font-size:10px;
+text-transform:uppercase;
+letter-spacing:2px;
+color:#ff00ff;
+font-weight:700;
+position:sticky;
+top:0;
+z-index:5;
+border-bottom:1px solid rgba(255,0,255,.1);
+font-family:'Orbitron',sans-serif;
+}
+
+.scale-pattern-cell{
+width:26px;height:26px;
+display:flex;align-items:center;justify-content:center;
+font-size:9px;border-radius:4px;
+cursor:pointer;transition:all .15s;
+}
+.scale-pattern-cell:hover{transform:scale(1.3);z-index:10}
+.scale-pattern-cell.active-note{
+background:linear-gradient(135deg,#00f0ff,#0088ff);
+color:#05050f;
+font-weight:700;
+box-shadow:0 0 8px rgba(0,240,255,.5);
+}
+.scale-pattern-cell.scale-note{
+background:rgba(0,240,255,.15);
+border:1px solid rgba(0,240,255,.3);
+color:#00f0ff;
+}
+
+.corner-accent{position:absolute;width:20px;height:20px}
+.corner-accent.tl{top:0;left:0;border-top:2px solid #00f0ff;border-left:2px solid #00f0ff}
+.corner-accent.tr{top:0;right:0;border-top:2px solid #00f0ff;border-right:2px solid #00f0ff}
+.corner-accent.bl{bottom:0;left:0;border-bottom:2px solid #ff00ff;border-left:2px solid #ff00ff}
+.corner-accent.br{bottom:0;right:0;border-bottom:2px solid #ff00ff;border-right:2px solid #ff00ff}
+
+.data-line{
+height:1px;
+background:linear-gradient(90deg,transparent,rgba(0,240,255,.3),rgba(255,0,255,.3),transparent);
+}
+
+.hex-bg{
+position:fixed;top:0;left:0;right:0;bottom:0;
+opacity:.02;
+background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5L55 20v20L30 55 5 40V20z' fill='none' stroke='%2300f0ff' stroke-width='.5'/%3E%3C/svg%3E");
+pointer-events:none;
+}
+
+.info-card{
+background:rgba(10,10,30,.8);
+border:1px solid rgba(0,240,255,.15);
+border-radius:8px;
+position:relative;
+overflow:hidden;
+}
+.info-card::before{
+content:'';position:absolute;top:0;left:0;right:0;height:1px;
+background:linear-gradient(90deg,#00f0ff,transparent);
+}
+
+.status-dot{
+width:6px;height:6px;border-radius:50%;
+background:#00ff88;
+box-shadow:0 0 5px #00ff88;
+animation:pulse-glow 1.5s infinite;
+}
+
+svg text{font-family:'Inter',sans-serif}
+</style>
+</head>
+<body class="bg-grid scanlines">
+<div class="hex-bg"></div>
+
+<div class="min-h-screen flex flex-col relative">
+<!-- Header -->
+<header class="relative p-4 border-b border-cyan-500/20" style="background:linear-gradient(180deg,rgba(0,240,255,.05),transparent)">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="w-12 h-12 rounded-lg border border-cyan-400/30 flex items-center justify-center text-2xl" style="background:rgba(0,240,255,.05);box-shadow:0 0 15px rgba(0,240,255,.2)">
+🎸
+</div>
+<div class="status-dot absolute -top-1 -right-1"></div>
+</div>
+<div>
+<h1 class="font-cyber text-lg font-black tracking-wider">
+<span class="neon-cyan">TOTAL</span><span class="neon-magenta">GUITAR</span>
+</h1>
+<p class="font-cyber text-[10px] tracking-[3px] text-gray-500">GUITAR CODEX v2.0</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden md:flex items-center gap-2 text-[10px] font-cyber text-gray-600">
+<div class="status-dot"></div>
+<span>SYSTEM ONLINE</span>
+</div>
+<button onclick="setMode('chords')" id="btn-chords" class="mode-btn active px-5 py-2 rounded font-cyber text-xs tracking-wider border border-cyan-500/30 bg-[#0a0a1a]">
+◈ ACORDES
+</button>
+<button onclick="setMode('scales')" id="btn-scales" class="mode-btn px-5 py-2 rounded font-cyber text-xs tracking-wider border border-cyan-500/30 bg-[#0a0a1a]">
+◈ ESCALAS
+</button>
+</div>
+</div>
+</header>
+
+<!-- Root Selector -->
+<div class="p-3 border-b border-cyan-500/10" style="background:rgba(5,5,15,.8)">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-wrap gap-2 justify-center" id="root-selector"></div>
+</div>
+</div>
+
+<!-- Main Content -->
+<div class="flex-1 flex max-w-7xl mx-auto w-full">
+<!-- Sidebar -->
+<div class="w-64 border-r border-cyan-500/10 overflow-y-auto flex-shrink-0" style="max-height:calc(100vh - 140px);background:rgba(5,5,15,.6)" id="type-list"></div>
+
+<!-- Display -->
+<div class="flex-1 overflow-y-auto p-6" style="max-height:calc(100vh - 140px)" id="main-display">
+<div class="text-center mt-20">
+<div class="inline-block relative p-8">
+<div class="corner-accent tl"></div>
+<div class="corner-accent tr"></div>
+<div class="corner-accent bl"></div>
+<div class="corner-accent br"></div>
+<p class="text-6xl mb-4 animate-flicker">🎸</p>
+<p class="font-cyber text-sm tracking-wider neon-cyan">SELECCIONA UN ELEMENTO</p>
+<p class="text-xs text-gray-600 mt-2 font-cyber tracking-wider">ACORDE O ESCALA PARA INICIAR</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const NOTE_NAMES_ES=['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+const STRINGS_MIDI=[40,45,50,55,59,64];
+const STRING_NAMES=['E','A','D','G','B','e'];
+let audioCtx=null;
+let currentMode='chords';
+let currentRoot=0;
+let currentType=null;
+
+function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+function midiToFreq(m){return 440*Math.pow(2,(m-69)/12)}
+
+function playNote(midi,dur=0.8){
+const ctx=getAudioCtx();const now=ctx.currentTime;const freq=midiToFreq(midi);
+const osc1=ctx.createOscillator();osc1.type='triangle';osc1.frequency.value=freq;
+const osc2=ctx.createOscillator();osc2.type='sine';osc2.frequency.value=freq*2;
+const osc3=ctx.createOscillator();osc3.type='sine';osc3.frequency.value=freq*3;
+const g1=ctx.createGain();const g2=ctx.createGain();const g3=ctx.createGain();
+g1.gain.setValueAtTime(0.3,now);g1.gain.exponentialRampToValueAtTime(0.001,now+dur);
+g2.gain.setValueAtTime(0.1,now);g2.gain.exponentialRampToValueAtTime(0.001,now+dur*0.6);
+g3.gain.setValueAtTime(0.03,now);g3.gain.exponentialRampToValueAtTime(0.001,now+dur*0.4);
+osc1.connect(g1);g1.connect(ctx.destination);
+osc2.connect(g2);g2.connect(ctx.destination);
+osc3.connect(g3);g3.connect(ctx.destination);
+osc1.start(now);osc2.start(now);osc3.start(now);
+osc1.stop(now+dur);osc2.stop(now+dur*0.6);osc3.stop(now+dur*0.4);
+}
+
+function playChord(midiNotes,strumDelay=0.04){
+midiNotes.forEach((n,i)=>{setTimeout(()=>playNote(n,1.5),i*strumDelay*1000)});
+}
+
+function playScale(midiNotes){
+midiNotes.forEach((n,i)=>{setTimeout(()=>playNote(n,0.5),i*250)});
+}
+
+const CHORD_TYPES=[
+{cat:'Básicos',items:[
+{id:'maj',name:'Mayor',sym:'',int:[0,4,7]},
+{id:'min',name:'Menor',sym:'m',int:[0,3,7]},
+{id:'5',name:'Power Chord',sym:'5',int:[0,7]},
+{id:'sus2',name:'Suspendida 2',sym:'sus2',int:[0,2,7]},
+{id:'sus4',name:'Suspendida 4',sym:'sus4',int:[0,5,7]},
+]},
+{cat:'Séptimas',items:[
+{id:'7',name:'Séptima Dom.',sym:'7',int:[0,4,7,10]},
+{id:'maj7',name:'Séptima Mayor',sym:'maj7',int:[0,4,7,11]},
+{id:'min7',name:'Séptima Menor',sym:'m7',int:[0,3,7,10]},
+{id:'dim7',name:'Séptima Disminuida',sym:'dim7',int:[0,3,6,9]},
+{id:'m7b5',name:'Semidisminuido',sym:'m7b5',int:[0,3,6,10]},
+{id:'aug7',name:'Séptima Aumentada',sym:'aug7',int:[0,4,8,10]},
+{id:'mmaj7',name:'Menor-Major 7',sym:'mmaj7',int:[0,3,7,11]},
+]},
+{cat:'Sextas y Novenas',items:[
+{id:'6',name:'Sexta',sym:'6',int:[0,4,7,9]},
+{id:'min6',name:'Sexta Menor',sym:'m6',int:[0,3,7,9]},
+{id:'69',name:'6/9',sym:'6/9',int:[0,4,7,9,14]},
+{id:'9',name:'Novena',sym:'9',int:[0,4,7,10,14]},
+{id:'maj9',name:'Novena Mayor',sym:'maj9',int:[0,4,7,11,14]},
+{id:'min9',name:'Novena Menor',sym:'m9',int:[0,3,7,10,14]},
+{id:'add9',name:'Añadida 9',sym:'add9',int:[0,4,7,14]},
+{id:'madd9',name:'Menor add9',sym:'madd9',int:[0,3,7,14]},
+]},
+{cat:'Décimas y Décimotericias',items:[
+{id:'11',name:'Onceava',sym:'11',int:[0,4,7,10,14,17]},
+{id:'13',name:'Treceava',sym:'13',int:[0,4,7,10,14,21]},
+{id:'maj11',name:'Onceava Mayor',sym:'maj11',int:[0,4,7,11,14,17]},
+{id:'maj13',name:'Treceava Mayor',sym:'maj13',int:[0,4,7,11,14,21]},
+{id:'min11',name:'Onceava Menor',sym:'m11',int:[0,3,7,10,14,17]},
+{id:'min13',name:'Treceava Menor',sym:'m13',int:[0,3,7,10,14,21]},
+]},
+{cat:'Alterados',items:[
+{id:'7b5',name:'7b5',sym:'7b5',int:[0,4,6,10]},
+{id:'7sharp5',name:'7#5',sym:'7#5',int:[0,4,8,10]},
+{id:'7b9',name:'7b9',sym:'7b9',int:[0,4,7,10,13]},
+{id:'7sharp9',name:'7#9',sym:'7#9',int:[0,4,7,10,15]},
+{id:'9sharp5',name:'9#5',sym:'9#5',int:[0,4,8,10,14]},
+{id:'9b5',name:'9b5',int:[0,4,6,10,14],sym:'9b5'},
+{id:'7sharp11',name:'7#11',sym:'7#11',int:[0,4,7,10,18]},
+{id:'maj7sharp5',name:'maj7#5',sym:'maj7#5',int:[0,4,8,11]},
+{id:'maj7sharp11',name:'maj7#11',sym:'maj7#11',int:[0,4,7,11,18]},
+{id:'aug',name:'Aumentado',sym:'aug',int:[0,4,8]},
+{id:'dim',name:'Disminuido',sym:'dim',int:[0,3,6]},
+]},
+{cat:'Exóticos',items:[
+{id:'7b13',name:'7b13',sym:'7b13',int:[0,4,7,10,20]},
+{id:'7alt',name:'7 Alterado',sym:'7alt',int:[0,4,6,10,13]},
+{id:'hendrix',name:'Hendrix 7#9',sym:'7#9',int:[0,4,7,10,15]},
+{id:'sharp11',name:'Sharp 11',sym:'#11',int:[0,4,7,18]},
+{id:'quartal',name:'Quartal',sym:'quartal',int:[0,5,10,15]},
+{id:'phrygChord',name:'Frigio',sym:'phryg',int:[0,1,5,7]},
+{id:'neapolitan',name:'Napolitano',sym:'nap',int:[0,1,5]},
+{id:'lydChord',name:'Lidio',sym:'lyd',int:[0,4,6,11]},
+{id:'tristan',name:'Tristán',sym:'tris',int:[0,4,6,11,14]},
+{id:'petrushka',name:'Petrushka',sym:'pet',int:[0,1,4,7]},
+{id:'midiChord',name:'Midi',sym:'midi',int:[0,1,7]},
+{id:'soWhat',name:'So What',sym:'soWhat',int:[0,5,7,12,17]},
+]},
+];
+
+const SCALE_TYPES=[
+{cat:'Modos Mayores',items:[
+{id:'ionian',name:'Jónica (Mayor)',int:[0,2,4,5,7,9,11]},
+{id:'dorian',name:'Dórica',int:[0,2,3,5,7,9,10]},
+{id:'phrygian',name:'Frigia',int:[0,1,3,5,7,8,10]},
+{id:'lydian',name:'Lidia',int:[0,2,4,6,7,9,11]},
+{id:'mixolydian',name:'Mixolidia',int:[0,2,4,5,7,9,10]},
+{id:'aeolian',name:'Eólica (Menor Nat.)',int:[0,2,3,5,7,8,10]},
+{id:'locrian',name:'Locria',int:[0,1,3,5,6,8,10]},
+]},
+{cat:'Menores',items:[
+{id:'harm_min',name:'Menor Armónica',int:[0,2,3,5,7,8,11]},
+{id:'mel_min',name:'Menor Melódica',int:[0,2,3,5,7,9,11]},
+{id:'dbl_harm',name:'Doble Armónica',int:[0,1,4,5,7,8,11]},
+]},
+{cat:'Pentatónicas',items:[
+{id:'pent_maj',name:'Pent. Mayor',int:[0,2,4,7,9]},
+{id:'pent_min',name:'Pent. Menor',int:[0,3,5,7,10]},
+{id:'blues_min',name:'Blues Menor',int:[0,3,5,6,7,10]},
+{id:'blues_maj',name:'Blues Mayor',int:[0,2,3,4,7,9]},
+]},
+{cat:'Simétricas',items:[
+{id:'whole',name:'Tono Entero',int:[0,2,4,6,8,10]},
+{id:'dim_hw',name:'Disminuida H-W',int:[0,1,3,4,6,7,9,10]},
+{id:'dim_wh',name:'Disminuida W-H',int:[0,2,3,5,6,8,9,11]},
+{id:'chromatic',name:'Cromática',int:[0,1,2,3,4,5,6,7,8,9,10,11]},
+]},
+{cat:'Bebop',items:[
+{id:'bebop_dom',name:'Bebop Dominante',int:[0,2,4,5,7,9,10,11]},
+{id:'bebop_maj',name:'Bebop Mayor',int:[0,2,4,5,7,8,9,11]},
+{id:'bebop_min',name:'Bebop Menor',int:[0,2,3,4,5,7,9,10]},
+]},
+{cat:'Modos Menor Melódico',items:[
+{id:'phryg_nat6',name:'Frigia #6',int:[0,1,3,5,7,9,10]},
+{id:'lyd_aug',name:'Lidia Aumentada',int:[0,2,4,6,8,9,11]},
+{id:'lyd_dom',name:'Lidia Dominante',int:[0,2,4,6,7,9,10]},
+{id:'mixo_b6',name:'Mixolidia b6',int:[0,2,4,5,7,8,10]},
+{id:'locrian_nat2',name:'Locria #2',int:[0,2,3,5,6,8,10]},
+{id:'super_locrian',name:'Super Locria',int:[0,1,3,4,6,8,10]},
+]},
+{cat:'Japonesas',items:[
+{id:'japanese_in',name:'In (Japonesa)',int:[0,1,5,7,8]},
+{id:'hirajoshi',name:'Hirajoshi',int:[0,2,3,7,8]},
+{id:'iwato',name:'Iwato',int:[0,1,5,6,10]},
+{id:'kumoi',name:'Kumoi',int:[0,2,3,7,9]},
+{id:'insen',name:'Insen',int:[0,1,5,7,10]},
+{id:'ogawa',name:'Ogawa',int:[0,2,3,5,8]},
+]},
+{cat:'Árabes y Orientales',items:[
+{id:'arabic',name:'Árabe',int:[0,1,4,5,7,8,11]},
+{id:'persian',name:'Persa',int:[0,1,4,5,6,8,11]},
+{id:'egyptian',name:'Egyptian',int:[0,2,5,7,10]},
+{id:'hindu',name:'Hindú',int:[0,2,4,5,7,8,10]},
+{id:'gypsy',name:'Gitana',int:[0,1,4,5,7,8,10]},
+{id:'byzantine',name:'Bizantina',int:[0,1,4,5,7,8,11]},
+]},
+{cat:'Europeas Exóticas',items:[
+{id:'hung_min',name:'Húngara Menor',int:[0,2,3,6,7,8,11]},
+{id:'hung_maj',name:'Húngara Mayor',int:[0,3,4,6,7,9,10]},
+{id:'spanish_8',name:'Española (8 notas)',int:[0,1,3,4,5,6,8,10]},
+{id:'neap_min',name:'Napolitana Menor',int:[0,1,3,5,7,8,11]},
+{id:'neap_maj',name:'Napolitana Mayor',int:[0,1,3,5,7,9,11]},
+{id:'enigmatic',name:'Enigmática',int:[0,1,4,6,8,10,11]},
+{id:'prometheus',name:'Prometeo',int:[0,1,4,6,8,10]},
+{id:'leading',name:'Leading Whole Tone',int:[0,2,4,6,8,10,11]},
+{id:'spanish_phryg',name:'Española Frigia',int:[0,1,4,5,7,8,10]},
+{id:'algerian',name:'Argelina',int:[0,2,3,5,6,8,11]},
+{id:'romanian',name:'Rumana',int:[0,2,3,6,7,9,10]},
+{id:'ukrainian',name:'Ucraniana',int:[0,2,3,6,7,9,10]},
+]},
+{cat:'Otras',items:[
+{id:'mongolian',name:'Mongola',int:[0,2,4,7,9]},
+{id:'chinese',name:'China',int:[0,4,6,7,11]},
+{id:'javanese',name:'Javanesa',int:[0,1,3,5,7,10,11]},
+{id:'balinese',name:'Balinesa',int:[0,1,3,7,8]},
+{id:'ethiopian',name:'Etíope',int:[0,2,4,5,7,9,10]},
+{id:'maqam',name:'Maqam Hijaz',int:[0,1,4,5,7,8,10]},
+{id:'todi',name:'Todi',int:[0,1,3,6,7,9,11]},
+{id:'purvi',name:'Purvi',int:[0,1,4,6,7,9,11]},
+{id:'marva',name:'Marva',int:[0,1,4,6,7,9,11]},
+]},
+];
+
+// CORREGIDO: sus2 tiene shape correcto (diferente de menor)
+const CHORD_SHAPES={
+maj:{E:{off:[0,2,2,1,0,0],rs:5,bm:40},A:{off:[-1,0,2,2,2,0],rs:4,bm:45}},
+min:{E:{off:[0,2,2,0,0,0],rs:5,bm:40},A:{off:[-1,0,2,2,1,0],rs:4,bm:45}},
+'5':{E:{off:[0,2,-1,-1,-1,-1],rs:5,bm:40},A:{off:[-1,0,2,-1,-1,-1],rs:4,bm:45}},
+sus2:{E:{off:[0,2,4,0,0,0],rs:5,bm:40},A:{off:[-1,0,2,2,0,0],rs:4,bm:45}},
+sus4:{E:{off:[0,2,2,2,0,0],rs:5,bm:40},A:{off:[-1,0,2,2,3,0],rs:4,bm:45}},
+'7':{E:{off:[0,2,0,1,0,0],rs:5,bm:40},A:{off:[-1,0,2,0,2,0],rs:4,bm:45}},
+maj7:{E:{off:[0,2,1,1,0,0],rs:5,bm:40},A:{off:[-1,0,2,1,2,0],rs:4,bm:45}},
+min7:{E:{off:[0,2,0,0,0,0],rs:5,bm:40},A:{off:[-1,0,2,0,1,0],rs:4,bm:45}},
+dim7:{D:{off:[-1,-1,0,1,0,1],rs:3,bm:50}},
+m7b5:{E:{off:[0,2,0,0,-1,0],rs:5,bm:40},A:{off:[-1,0,1,0,1,0],rs:4,bm:45}},
+aug7:{E:{off:[0,3,0,1,1,0],rs:5,bm:40},A:{off:[-1,0,3,2,2,1],rs:4,bm:45}},
+mmaj7:{E:{off:[0,2,1,0,0,0],rs:5,bm:40},A:{off:[-1,0,2,1,1,0],rs:4,bm:45}},
+'6':{E:{off:[0,2,2,1,2,0],rs:5,bm:40},A:{off:[-1,0,2,2,2,2],rs:4,bm:45}},
+min6:{E:{off:[0,2,2,0,2,0],rs:5,bm:40},A:{off:[-1,0,2,2,1,2],rs:4,bm:45}},
+'69':{A:{off:[-1,0,2,2,2,4],rs:4,bm:45}},
+'9':{E:{off:[0,2,0,1,0,2],rs:5,bm:40},A:{off:[-1,0,4,0,2,0],rs:4,bm:45}},
+maj9:{A:{off:[-1,0,4,1,2,0],rs:4,bm:45}},
+min9:{A:{off:[-1,0,3,0,1,0],rs:4,bm:45}},
+add9:{E:{off:[0,2,2,1,0,2],rs:5,bm:40},A:{off:[-1,0,2,2,2,2],rs:4,bm:45}},
+madd9:{A:{off:[-1,0,2,2,1,2],rs:4,bm:45}},
+'11':{E:{off:[0,0,0,0,0,0],rs:5,bm:40}},
+'13':{A:{off:[-1,0,4,2,2,2],rs:4,bm:45}},
+maj11:{A:{off:[-1,0,4,1,2,2],rs:4,bm:45}},
+maj13:{A:{off:[-1,0,4,2,4,2],rs:4,bm:45}},
+min11:{A:{off:[-1,0,3,0,3,0],rs:4,bm:45}},
+min13:{A:{off:[-1,0,3,2,1,2],rs:4,bm:45}},
+'7b5':{E:{off:[0,1,0,1,0,0],rs:5,bm:40},A:{off:[-1,0,1,0,2,0],rs:4,bm:45}},
+'7sharp5':{E:{off:[0,3,0,1,1,0],rs:5,bm:40},A:{off:[-1,0,3,2,2,1],rs:4,bm:45}},
+'7b9':{E:{off:[0,2,0,1,0,1],rs:5,bm:40},A:{off:[-1,0,2,0,2,1],rs:4,bm:45}},
+'7sharp9':{E:{off:[0,2,0,1,0,3],rs:5,bm:40},A:{off:[-1,0,2,0,2,3],rs:4,bm:45}},
+'9sharp5':{A:{off:[-1,0,3,0,2,0],rs:4,bm:45}},
+'9b5':{A:{off:[-1,0,1,0,2,0],rs:4,bm:45}},
+'7sharp11':{E:{off:[0,2,0,1,2,0],rs:5,bm:40}},
+maj7sharp5:{E:{off:[0,3,1,1,1,0],rs:5,bm:40}},
+maj7sharp11:{E:{off:[0,2,1,1,2,0],rs:5,bm:40}},
+aug:{E:{off:[0,3,2,1,1,0],rs:5,bm:40},A:{off:[-1,0,3,2,2,0],rs:4,bm:45}},
+dim:{E:{off:[0,1,2,0,-1,-1],rs:5,bm:40},A:{off:[-1,0,1,2,1,-1],rs:4,bm:45}},
+'7b13':{A:{off:[-1,0,2,0,2,1],rs:4,bm:45}},
+'7alt':{E:{off:[0,2,0,1,1,3],rs:5,bm:40}},
+hendrix:{E:{off:[0,2,0,1,0,3],rs:5,bm:40}},
+sharp11:{E:{off:[0,2,1,1,2,0],rs:5,bm:40}},
+quartal:{E:{off:[0,0,0,0,0,0],rs:5,bm:40}},
+phrygChord:{E:{off:[0,1,2,2,0,0],rs:5,bm:40}},
+neapolitan:{E:{off:[0,1,1,-1,-1,-1],rs:5,bm:40}},
+lydChord:{E:{off:[0,2,0,1,2,0],rs:5,bm:40}},
+tristan:{E:{off:[0,2,1,1,2,0],rs:5,bm:40}},
+petrushka:{E:{off:[0,1,0,0,0,0],rs:5,bm:40}},
+midiChord:{E:{off:[0,1,-1,-1,0,0],rs:5,bm:40}},
+soWhat:{A:{off:[-1,0,2,2,3,0],rs:4,bm:45}},
+};
+
+function getChordPosition(rootIdx,chordId){
+const rootMidi=60+rootIdx;
+const shapes=CHORD_SHAPES[chordId];
+if(!shapes)return generateChordPosition(rootIdx,chordId);
+let best=null;let bestFret=99;
+for(let key in shapes){
+const s=shapes[key];
+let barreFret=rootMidi-s.bm;
+if(barreFret<0)barreFret+=12;
+if(barreFret>12)continue;
+const pos=s.off.map(o=>o===-1?-1:barreFret+o);
+const maxF=Math.max(...pos.filter(p=>p!==-1));
+const minF=Math.min(...pos.filter(p=>p!==-1));
+if(maxF-minF<=4&&maxF<=12){
+if(maxF<bestFret){bestFret=maxF;best=pos;}
+}
+}
+if(!best){
+for(let key in shapes){
+const s=shapes[key];
+let barreFret=rootMidi-s.bm;
+if(barreFret<0)barreFret+=12;
+if(barreFret>15)barreFret-=12;
+const pos=s.off.map(o=>o===-1?-1:barreFret+o);
+if(!best)best=pos;
+}
+}
+return best||generateChordPosition(rootIdx,chordId);
+}
+
+function generateChordPosition(rootIdx,chordType){
+const allTypes=[].concat(...CHORD_TYPES.map(c=>c.items));
+const ct=allTypes.find(t=>t.id===chordType);
+if(!ct)return[0,2,2,1,0,0];
+const intervals=ct.int;
+const rootMidi=60+rootIdx;
+const pcs=intervals.map(i=>(rootMidi+i)%12);
+const pos=[];
+for(let s=0;s<6;s++){
+let found=-1;
+for(let f=0;f<=12;f++){
+if(pcs.includes((STRINGS_MIDI[s]+f)%12)){found=f;break;}
+}
+pos.push(found);
+}
+return pos;
+}
+
+function getChordNotes(rootIdx,chordId){
+const allTypes=[].concat(...CHORD_TYPES.map(c=>c.items));
+const ct=allTypes.find(t=>t.id===chordId);
+if(!ct)return[];
+const pos=getChordPosition(rootIdx,chordId);
+const notes=[];
+for(let s=0;s<6;s++){
+if(pos[s]!==-1){notes.push(STRINGS_MIDI[s]+pos[s]);}
+}
+return notes;
+}
+
+function getScaleNotes(rootIdx,scaleId){
+const allTypes=[].concat(...SCALE_TYPES.map(c=>c.items));
+const st=allTypes.find(t=>t.id===scaleId);
+if(!st)return[];
+return st.int.map(i=>60+rootIdx+i);
+}
+
+function getScaleTab(rootIdx,scaleId){
+const allTypes=[].concat(...SCALE_TYPES.map(c=>c.items));
+const st=allTypes.find(t=>t.id===scaleId);
+if(!st)return[];
+const pcs=st.int.map(i=>(rootIdx+i)%12);
+const tab=[];
+for(let s=0;s<6;s++){
+const strNotes=[];
+for(let f=0;f<=15;f++){
+if(pcs.includes((STRINGS_MIDI[s]+f)%12)){
+strNotes.push({fret:f,midi:STRINGS_MIDI[s]+f});
+}
+}
+tab.push(strNotes);
+}
+return tab;
+}
+
+function initRootSelector(){
+const c=document.getElementById('root-selector');
+c.innerHTML='';
+NOTES.forEach((n,i)=>{
+const btn=document.createElement('button');
+btn.className=`root-btn px-3 py-1.5 rounded font-cyber text-xs tracking-wider border border-cyan-500/20 bg-[#0a0a1a] ${i===currentRoot?'active':''}`;
+btn.textContent=n;
+btn.onclick=()=>{currentRoot=i;initRootSelector();renderCurrent();};
+c.appendChild(btn);
+});
+}
+
+function setMode(m){
+currentMode=m;currentType=null;
+document.getElementById('btn-chords').classList.toggle('active',m==='chords');
+document.getElementById('btn-scales').classList.toggle('active',m==='scales');
+initTypeList();
+document.getElementById('main-display').innerHTML=`
+<div class="text-center mt-20">
+<div class="inline-block relative p-8">
+<div class="corner-accent tl"></div>
+<div class="corner-accent tr"></div>
+<div class="corner-accent bl"></div>
+<div class="corner-accent br"></div>
+<p class="text-6xl mb-4 animate-flicker">🎸</p>
+<p class="font-cyber text-sm tracking-wider neon-cyan">SELECCIONA UN ${m==='chords'?'ACORDE':'ESCALA'}</p>
+<p class="text-xs text-gray-600 mt-2 font-cyber tracking-wider">DEL PANEL IZQUIERDO</p>
+</div>
+</div>`;
+}
+
+function initTypeList(){
+const list=document.getElementById('type-list');
+list.innerHTML='';
+const types=currentMode==='chords'?CHORD_TYPES:SCALE_TYPES;
+types.forEach(cat=>{
+const h=document.createElement('div');
+h.className='category-header';
+h.textContent=cat.cat;
+list.appendChild(h);
+cat.items.forEach(item=>{
+const d=document.createElement('div');
+d.className='type-item px-4 py-2.5 text-sm relative';
+d.innerHTML=`<span class="relative z-10">${item.name}</span>`;
+d.dataset.id=item.id;
+d.onclick=()=>{
+currentType=item.id;
+document.querySelectorAll('.type-item').forEach(e=>e.classList.remove('active'));
+d.classList.add('active');
+renderCurrent();
+};
+list.appendChild(d);
+});
+});
+}
+
+function renderCurrent(){
+if(!currentType)return;
+const display=document.getElementById('main-display');
+display.innerHTML='';
+if(currentMode==='chords')renderChord(display);
+else renderScale(display);
+}
+
+function renderChord(display){
+const allTypes=[].concat(...CHORD_TYPES.map(c=>c.items));
+const ct=allTypes.find(t=>t.id===currentType);
+if(!ct)return;
+const pos=getChordPosition(currentRoot,currentType);
+const notes=getChordNotes(currentRoot,currentType);
+const chordName=NOTES[currentRoot]+ct.sym;
+
+const title=document.createElement('div');
+title.className='text-center mb-6 relative';
+title.innerHTML=`
+<div class="inline-block relative px-8 py-4">
+<div class="corner-accent tl"></div>
+<div class="corner-accent tr"></div>
+<div class="corner-accent bl"></div>
+<div class="corner-accent br"></div>
+<h2 class="font-cyber text-3xl font-black neon-cyan animate-flicker">${chordName}</h2>
+<p class="text-gray-400 text-xs mt-1 font-cyber tracking-wider">${ct.name.toUpperCase()}</p>
+</div>`;
+display.appendChild(title);
+
+const topRow=document.createElement('div');
+topRow.className='flex flex-wrap gap-6 justify-center mb-6';
+
+const diagramDiv=document.createElement('div');
+diagramDiv.className='chord-diagram p-5 flex flex-col items-center';
+diagramDiv.innerHTML=renderChordDiagramSVG(pos);
+topRow.appendChild(diagramDiv);
+
+const infoDiv=document.createElement('div');
+infoDiv.className='flex flex-col gap-3 justify-center max-w-sm';
+infoDiv.innerHTML=`
+<div class="info-card p-4">
+<h3 class="font-cyber text-[10px] tracking-wider neon-magenta mb-3">◈ NOTAS DEL ACORDE</h3>
+<div class="flex flex-wrap gap-2">
+${notes.map(n=>`<span class="bg-[#0a0a2a] border border-cyan-500/20 px-2 py-1 rounded text-xs cursor-pointer hover:border-cyan-400 hover:text-cyan-300 transition font-mono" onmouseenter="playNote(${n})">${NOTES[n%12]}${Math.floor(n/12)-1}</span>`).join('')}
+</div>
+</div>
+<div class="info-card p-4">
+<h3 class="font-cyber text-[10px] tracking-wider neon-magenta mb-3">◈ FÓRMULA INTERVALOS</h3>
+<p class="text-xs text-gray-300 font-mono">${ct.int.map(v=>{const names=['R','b2','2','b3','3','4','b5','5','#5','6','b7','7'];return names[v%12]||v}).join(' - ')}</p>
+</div>
+<button onclick="playChord([${notes.join(',')}])" class="play-btn px-6 py-3 rounded font-cyber text-xs tracking-wider text-cyan-300 mt-2">
+▶ REPRODUCIR ACORDE
+</button>
+`;
+topRow.appendChild(infoDiv);
+display.appendChild(topRow);
+
+const divider=document.createElement('div');
+divider.className='data-line my-6';
+display.appendChild(divider);
+
+const tabSection=document.createElement('div');
+tabSection.className='mb-6';
+tabSection.innerHTML=`<h3 class="font-cyber text-sm tracking-wider neon-cyan mb-3">◈ TABLATURA</h3>`;
+const tabDiv=document.createElement('div');
+tabDiv.className='info-card p-4 overflow-x-auto';
+tabDiv.innerHTML=renderTablature(pos,true);
+tabSection.appendChild(tabDiv);
+display.appendChild(tabSection);
+
+const staffSection=document.createElement('div');
+staffSection.className='mb-6';
+staffSection.innerHTML=`<h3 class="font-cyber text-sm tracking-wider neon-cyan mb-3">◈ PARTITURA</h3>`;
+const staffDiv=document.createElement('div');
+staffDiv.className='info-card p-4 overflow-x-auto';
+staffDiv.id='staff-chord';
+staffSection.appendChild(staffDiv);
+display.appendChild(staffSection);
+
+setTimeout(()=>renderStaff('staff-chord',notes,true),50);
+}
+
+function renderScale(display){
+const allTypes=[].concat(...SCALE_TYPES.map(c=>c.items));
+const st=allTypes.find(t=>t.id===currentType);
+if(!st)return;
+const scaleNotes=getScaleNotes(currentRoot,currentType);
+const tabData=getScaleTab(currentRoot,currentType);
+const scaleName=NOTES[currentRoot]+' '+st.name;
+
+const title=document.createElement('div');
+title.className='text-center mb-6 relative';
+title.innerHTML=`
+<div class="inline-block relative px-8 py-4">
+<div class="corner-accent tl"></div>
+<div class="corner-accent tr"></div>
+<div class="corner-accent bl"></div>
+<div class="corner-accent br"></div>
+<h2 class="font-cyber text-2xl font-black neon-magenta animate-flicker">${scaleName}</h2>
+<p class="text-gray-400 text-xs mt-1 font-cyber tracking-wider">${st.int.length} NOTAS · INTERVALOS: ${st.int.join('-')}</p>
+</div>`;
+display.appendChild(title);
+
+const infoDiv=document.createElement('div');
+infoDiv.className='info-card p-4 mb-6';
+infoDiv.innerHTML=`
+<div class="flex flex-wrap items-center gap-3 justify-center">
+<span class="font-cyber text-[10px] tracking-wider neon-magenta">NOTAS:</span>
+${st.int.map(i=>{const n=(currentRoot+i)%12;const isRoot=i===0;return `<span class="${isRoot?'border-cyan-400 text-cyan-300':'border-cyan-500/20 text-gray-300'} bg-[#0a0a2a] border px-2 py-1 rounded text-xs cursor-pointer hover:border-cyan-400 transition font-mono" onmouseenter="playNote(${60+n})">${NOTES[n]}</span>`}).join('')}
+</div>
+<button onclick="playScale([${scaleNotes.join(',')}])" class="play-btn px-6 py-3 rounded font-cyber text-xs tracking-wider text-cyan-300 mt-4 block mx-auto">
+▶ REPRODUCIR ESCALA
+</button>
+`;
+display.appendChild(infoDiv);
+
+const divider=document.createElement('div');
+divider.className='data-line my-6';
+display.appendChild(divider);
+
+const patternSection=document.createElement('div');
+patternSection.className='mb-6';
+patternSection.innerHTML=`<h3 class="font-cyber text-sm tracking-wider neon-cyan mb-3">◈ PATRÓN EN EL MÁSTIL</h3>`;
+const patternDiv=document.createElement('div');
+patternDiv.className='info-card p-4 overflow-x-auto';
+patternDiv.innerHTML=renderScalePattern(tabData);
+patternSection.appendChild(patternDiv);
+display.appendChild(patternSection);
+
+const tabSection=document.createElement('div');
+tabSection.className='mb-6';
+tabSection.innerHTML=`<h3 class="font-cyber text-sm tracking-wider neon-cyan mb-3">◈ TABLATURA</h3>`;
+const tabDiv=document.createElement('div');
+tabDiv.className='info-card p-4 overflow-x-auto';
+tabDiv.innerHTML=renderScaleTab(tabData);
+tabSection.appendChild(tabDiv);
+display.appendChild(tabSection);
+
+const staffSection=document.createElement('div');
+staffSection.className='mb-6';
+staffSection.innerHTML=`<h3 class="font-cyber text-sm tracking-wider neon-cyan mb-3">◈ PARTITURA</h3>`;
+const staffDiv=document.createElement('div');
+staffDiv.className='info-card p-4 overflow-x-auto';
+staffDiv.id='staff-scale';
+staffSection.appendChild(staffDiv);
+display.appendChild(staffSection);
+
+setTimeout(()=>renderStaff('staff-scale',scaleNotes,false),50);
+}
+
+function renderChordDiagramSVG(pos){
+const w=150,h=180;
+const startX=25,startY=35;
+const strGap=20,fretGap=28;
+let svg=`<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">`;
+const minFret=Math.min(...pos.filter(p=>p!==-1&&p>0));
+const showNut=minFret<=0||minFret===Infinity;
+if(showNut){
+svg+=`<rect x="${startX}" y="${startY-3}" width="${strGap*5}" height="4" fill="#00f0ff" rx="1" opacity="0.8"/>`;
+}else{
+svg+=`<text x="${startX-14}" y="${startY+18}" fill="#ff00ff" font-size="12" font-weight="bold" font-family="Orbitron">${minFret}</text>`;
+}
+for(let f=0;f<=5;f++){
+const y=startY+f*fretGap;
+svg+=`<line x1="${startX}" y1="${y}" x2="${startX+strGap*5}" y2="${y}" stroke="rgba(0,240,255,0.2)" stroke-width="1"/>`;
+}
+for(let s=0;s<6;s++){
+const x=startX+s*strGap;
+svg+=`<line x1="${x}" y1="${startY}" x2="${x}" y2="${startY+5*fretGap}" stroke="rgba(0,240,255,0.15)" stroke-width="${s<3?1.5:1}"/>`;
+}
+const baseFret=showNut?0:minFret-1;
+for(let s=0;s<6;s++){
+const x=startX+s*strGap;
+if(pos[s]===-1){
+svg+=`<text x="${x}" y="${startY-10}" fill="rgba(255,0,255,0.5)" font-size="14" text-anchor="middle" font-weight="bold">×</text>`;
+}else if(pos[s]===0){
+svg+=`<circle cx="${x}" cy="${startY-2}" r="7" fill="none" stroke="#00f0ff" stroke-width="2"/>`;
+}else{
+const fret=pos[s]-baseFret;
+if(fret>0&&fret<=5){
+const y=startY+(fret-0.5)*fretGap;
+svg+=`<circle cx="${x}" cy="${y}" r="9" fill="#00f0ff" opacity="0.9" style="filter:drop-shadow(0 0 4px #00f0ff)" class="cursor-pointer" onmouseenter="playNote(${STRINGS_MIDI[s]+pos[s]})"/>`;
+svg+=`<text x="${x}" y="${y+4}" fill="#05050f" font-size="10" font-weight="bold" text-anchor="middle">${pos[s]}</text>`;
+}
+}
+}
+for(let s=0;s<6;s++){
+svg+=`<text x="${startX+s*strGap}" y="${startY+5*fretGap+18}" fill="rgba(0,240,255,0.5)" font-size="10" text-anchor="middle" font-family="Orbitron">${STRING_NAMES[s]}</text>`;
+}
+svg+=`</svg>`;
+return svg;
+}
+
+function renderTablature(pos,isChord){
+let html='<div class="font-mono text-sm leading-loose">';
+const labels=['e','B','G','D','A','E'];
+for(let s=0;s<6;s++){
+html+=`<div class="flex items-center gap-2">`;
+html+=`<span class="neon-magenta w-4 text-right font-bold font-cyber text-xs">${labels[s]}</span>`;
+html+=`<span class="text-cyan-500/30">│</span>`;
+if(pos[s]===-1){
+html+=`<span class="text-pink-400/50 font-bold px-2">✕</span>`;
+}else{
+const midi=STRINGS_MIDI[s]+pos[s];
+html+=`<span class="note-cell inline-flex items-center justify-center w-8 h-8 bg-[#0a0a2a] border border-cyan-500/20 rounded text-cyan-300 font-bold text-xs font-mono" onmouseenter="playNote(${midi})" title="${NOTES[midi%12]}${Math.floor(midi/12)-1}">${pos[s]}</span>`;
+}
+html+=`<span class="text-cyan-500/30">│</span>`;
+html+=`</div>`;
+}
+html+='</div>';
+return html;
+}
+
+function renderScalePattern(tabData){
+const maxFret=15;
+let html='<div class="overflow-x-auto"><table class="border-collapse mx-auto">';
+const labels=['e','B','G','D','A','E'];
+for(let s=0;s<6;s++){
+html+='<tr>';
+html+=`<td class="neon-magenta text-[10px] font-bold pr-2 text-right w-6 font-cyber">${labels[s]}</td>`;
+for(let f=0;f<=maxFret;f++){
+const noteData=tabData[s].find(n=>n.fret===f);
+const isRoot=noteData&&((noteData.midi)%12===currentRoot);
+const isNote=!!noteData;
+let cls='scale-pattern-cell border border-cyan-500/10';
+if(isRoot)cls+=' active-note';
+else if(isNote)cls+=' scale-note';
+else cls+=' bg-[#0a0a1a] text-transparent border-cyan-500/5';
+const midi=isNote?noteData.midi:0;
+const hover=isNote?`onmouseenter="playNote(${midi})"`:''
+html+=`<td class="${cls}" ${hover}>${isNote?(f):'·'}</td>`;
+}
+html+='</tr>';
+}
+html+='<tr><td></td>';
+for(let f=0;f<=maxFret;f++){
+const dots=[0,3,5,7,9,12];
+html+=`<td class="text-center text-[9px] text-cyan-500/30 h-5 font-cyber">${f===0?'':f}${dots.includes(f)?'•':''}</td>`;
+}
+html+='</tr>';
+html+='</table></div>';
+return html;
+}
+
+function renderScaleTab(tabData){
+let html='<div class="font-mono text-xs">';
+const labels=['e','B','G','D','A','E'];
+for(let s=0;s<6;s++){
+html+=`<div class="flex items-center">`;
+html+=`<span class="neon-magenta w-4 text-right font-bold font-cyber text-[10px]">${labels[s]}</span>`;
+html+=`<span class="text-cyan-500/30">│</span>`;
+for(let f=0;f<=15;f++){
+const noteData=tabData[s].find(n=>n.fret===f);
+if(noteData){
+const isRoot=(noteData.midi%12)===currentRoot;
+const cls=isRoot?'bg-cyan-400 text-[#05050f] font-black':'bg-[#0a0a2a] border border-cyan-500/20 text-cyan-300';
+html+=`<span class="note-cell inline-flex items-center justify-center w-6 h-6 ${cls} rounded text-[10px] font-bold" onmouseenter="playNote(${noteData.midi})">${f}</span>`;
+}else{
+html+=`<span class="inline-flex items-center justify-center w-6 h-6 text-cyan-500/10">-</span>`;
+}
+}
+html+=`<span class="text-cyan-500/30">│</span></div>`;
+}
+html+='</div>';
+return html;
+}
+
+function renderStaff(containerId,notes,isChord){
+const container=document.getElementById(containerId);
+if(!container||typeof Vex==='undefined'){
+if(container)container.innerHTML='<p class="text-pink-400 text-xs font-cyber">Cargando partitura...</p>';
+return;
+}
+try{
+container.innerHTML='';
+const width=Math.max(500,notes.length*45+120);
+const vf=new Vex.Flow.Factory({renderer:{elementId:containerId,width:width,height:180}});
+const score=vf.EasyScore();
+
+if(isChord){
+// Render chord as a single chord (all notes stacked)
+const vexNotes=notes.map(n=>midiToVexName(n));
+const chordStr='['+vexNotes.join(',')+']/w';
+const voice=score.voice(score.notes(chordStr,{type:'n'}));
+const system=vf.System({x:20,y:20,width:width-40});
+system.addStave({voices:[voice]}).addClef('treble');
+vf.draw();
+}else{
+// Render scale as individual quarter notes
+const vexNotes=notes.map(n=>midiToVexName(n)+'/q');
+const voice=score.voice(score.notes(vexNotes.join(','),{type:'n'}));
+const system=vf.System({x:20,y:20,width:width-40});
+system.addStave({voices:[voice]}).addClef('treble');
+vf.draw();
+}
+
+// Add interactivity
+setTimeout(()=>{
+const svgEl=container.querySelector('svg');
+if(!svgEl)return;
+const noteheads=svgEl.querySelectorAll('.vf-notehead');
+noteheads.forEach((el,idx)=>{
+el.style.cursor='pointer';
+el.style.fill='#00f0ff';
+el.addEventListener('mouseenter',()=>{
+if(notes[idx])playNote(notes[idx],0.4);
+el.style.fill='#ff00ff';
+});
+el.addEventListener('mouseleave',()=>{
+el.style.fill='#00f0ff';
+});
+});
+},100);
+}catch(e){
+container.innerHTML=`<div class="p-4 text-center"><p class="text-pink-400/60 text-xs font-cyber">⚠ PARTITURA NO DISPONIBLE</p><p class="text-gray-600 text-[10px] mt-1">${e.message}</p></div>`;
+}
+}
+
+function midiToVexName(midi){
+const names=['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
+const octave=Math.floor(midi/12)-1;
+const note=names[midi%12];
+return note+'/'+octave;
+}
+
+// Initialize
+initRootSelector();
+initTypeList();
+setTimeout(()=>{
+const firstItem=document.querySelector('.type-item');
+if(firstItem)firstItem.click();
+},100);
+</script>
+</body>
+</html>
